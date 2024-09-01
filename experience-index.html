@@ -1,0 +1,385 @@
+<html>
+<body>
+  <!-- Include Lexical via CDN -->
+  <script src="lexical.js"></script>
+  <script src="lexical.selection.js"></script>
+  <script src="lexical.utils.js"></script>
+  <script src="lexical.html.js"></script>
+  <script src="lexical.clipboard.js"></script>
+  <script src="lexical.richtext.js"></script>
+  <script src="lexical.dragon.js"></script>
+  <script src="moment.js"></script>
+  <script src="index.js"></script>
+  <div id="editor" contenteditable="true"></div>
+  <h4>Editor state:</h4>
+  <textarea id="lexical-state" style="width: 100%; height:70vh"></textarea>
+  <button onclick="start()">Tiến Hành</button>
+  <script >
+    const stateRef = document.getElementById(
+        'lexical-state',
+      )
+    const initialConfig = {
+      namespace: 'Vanilla JS Demo',
+      // Register nodes specific for @lexical/rich-text
+      nodes: [HeadingNode, QuoteNode],
+      onError: (error) => {
+        throw error;
+      },
+      theme: {
+        // Adding styling to Quote node, see styles.css
+        quote: 'PlaygroundEditorTheme__quote',
+      },
+    };
+    // Create an editor instance
+    const editor = lexical.createEditor(initialConfig);
+    // Set the root element (where you want to edit content)
+    const contentEditableElement = document.getElementById('editor');
+    editor.setRootElement(contentEditableElement);
+
+    mergeRegister(
+      registerRichText(editor),
+      registerDragonSupport(editor),
+    );
+
+
+    function start() {
+    fetch("http://localhost:8000/static/experience_data.json")
+    .then(res => res.json())
+    .then(res => {
+      let check = false
+      console.log("DOCUMENTs", res)
+
+      for (let i = 0; i < res.length; i = i+1) {
+        stateRef.value = JSON.stringify(res[i])
+
+        let document_ = {}
+
+        const time_mapping = [
+            "january", 
+            "febuary", 
+            "march", 
+            "april", 
+            "may", 
+            "june", 
+            "july", 
+            "august", 
+            "september", 
+            "october", 
+            "november", 
+            "december"
+        ]
+
+        document_ = {
+          "title": {
+                "vi": typeof res[i]['title_vi'] === "string" ? res[i]['title_vi'] : res[i]['title_vi'][0],
+                "en": typeof res[i]['title_en'] === "string" ? res[i]['title_en'] : res[i]['title_en'][0],
+                "ko": typeof res[i]['title_ko'] === "string" ? res[i]['title_ko'] : res[i]['title_ko'][0],
+          },
+          "description": {
+                "vi": "NEED TO FILL",
+                "en": "NEED TO FILL",
+                "ko": "NEED TO FILL",
+          },
+          "attributes":  [
+                "family_friendly",
+                "wheelchair_accessible",
+                "pet_friendly"
+          ],
+          "blocks": [],
+          "banner": typeof res[i]['image'] === "string" ? res[i]['image'] : res[i]['image'][0],
+          "slug": res[i]['code'],
+          "parent": "668d5bd371d9a9336407f259",
+          "author": "664226c8eae77f259b417e70",
+          "path": "/experiences/" + res[i]['code'],
+          "_status": "published",
+          "difficulty": "moderate",
+          "time": [],
+          "location": {
+                "type": "Point",
+                "coordinates": [
+                    res[i]['detail']['location'] ? res[i]['detail']['location'][0]['long'] : res[i]['detail']['location_vi'][0]['long'],
+                    res[i]['detail']['location'] ? res[i]['detail']['location'][0]['lat'] : res[i]['detail']['location_vi'][0]['lat'],
+                ]
+          },
+          "Attribute": {
+            "difficulty": "moderate",
+            "attributes":  [
+                "family_friendly",
+                "wheelchair_accessible",
+                "pet_friendly"
+            ],
+            "time": [],
+            "location": {
+                "type": "Point",
+                "coordinates": [
+                    res[i]['detail']['location'] ? res[i]['detail']['location'][0]['long'] : res[i]['detail']['location_vi'][0]['long'],
+                    res[i]['detail']['location'] ? res[i]['detail']['location'][0]['lat'] : res[i]['detail']['location_vi'][0]['lat'],
+                ]
+            }
+          },
+          "Content": {
+            "title": {
+                "vi": typeof res[i]['title_vi'] === "string" ? res[i]['title_vi'] : res[i]['title_vi'][0],
+                "en": typeof res[i]['title_en'] === "string" ? res[i]['title_en'] : res[i]['title_en'][0],
+                "ko": typeof res[i]['title_ko'] === "string" ? res[i]['title_ko'] : res[i]['title_ko'][0],
+            },
+            "description": {
+                "vi": "NEED TO FILL",
+                "en": "NEED TO FILL",
+                "ko": "NEED TO FILL",
+            },
+            "banner": typeof res[i]['image'] === "string" ? res[i]['image'] : res[i]['image'][0],
+            "blocks": []
+          },
+          "System": {
+            "slug": res[i]['code'],
+            "parent": "66535307b861234f1c08ba0b",
+            "author": "664226c8eae77f259b417e70",
+            "path": "/experiences/" + res[i]['code'],
+          },
+          "durationUnit": "minutes",
+          "duration": res[i]['detail']['information']['duration'],
+          "address": "Đà nẵng, VN",
+          "createdAt": {
+            "date":  moment(parseInt(res[i]["update_at"]["$numberLong"])).toISOString() //"2024-06-06T04:22:55.236Z"
+          },
+          "updatedAt": {
+            "date": moment(parseInt(res[i]["update_at"]["$numberLong"])).toISOString()
+          },
+          "seasons": [],
+          "accessibility": [],
+          "regions": "southern",
+          "themeAttribute": [],
+          "additionalInformation": null
+        }
+
+        for (let t of res[i]['detail']['information']['when']) {
+            document_["time"].push(time_mapping[t])
+            document_["Attribute"]["time"].push(time_mapping[t])
+        }
+
+        for (let t of res[i]['detail']['information']['when']) {
+            if (t >= 0 && t <= 2 && !document_["seasons"].includes("spring")) {
+              document_["seasons"].push("spring")
+            }
+            if (t >= 3 && t <= 5 && !document_["seasons"].includes("summer")) {
+              document_["seasons"].push("summer")
+            }
+            if (t >= 6 && t <= 8 && !document_["seasons"].includes("autumn")) {
+              document_["seasons"].push("autumn")
+            }
+            if (t >= 9 && t <= 11 && !document_["seasons"].includes("winter")) {
+              document_["seasons"].push("winter")
+            }
+        }
+
+        let block = {}
+
+        block = {
+          "type": "three-images-as-banner",
+          "title": {
+            "vi": "NEED TO CHANGE",
+            "en": "NEED TO CHANGE",
+            "ko": "NEED TO CHANGE"
+          },
+          "description": {
+            "vi": "NEED TO CHANGE",
+            "en": "NEED TO CHANGE",
+            "ko": "NEED TO CHANGE"
+          },
+          "link": {
+            "type": "reference",
+            "appearance": "primary"
+          },
+          "carousel": [],
+          "autoplaySpeed": 5000,
+          "ratio": "16:9",
+          "isFullWidth": false,
+          "blockType": "Carousel",
+          "autoplay": true
+        }
+
+        for (let image of res[i]['detail']['image']) {
+          block['carousel'].push({"media": image})
+        }
+
+        if (block['carousel'].length < 3) {
+          for (let i = 0; i < 3 - block['carousel'].length; i++) {
+            block['carousel'].push({"media": res[i]['detail']['image'][0]})
+          }
+        }
+
+        block['carousel'] = JSON.stringify(block['carousel'])
+
+        document_["blocks"].push(block)
+
+        block = {
+            "column1": {},
+            "column2": {
+              "en": {
+                "root": {
+                  "children": [
+                    {
+                      "children": [],
+                      "direction": null,
+                      "format": "",
+                      "indent": 0,
+                      "type": "paragraph",
+                      "version": 1,
+                      "textFormat": 0
+                    },
+                    {
+                      "format": "",
+                      "type": "block",
+                      "version": 2,
+                      "fields": {
+                        "doc": "",
+                        "blockName": "",
+                        "blockType": "GoodToKnow"
+                      }
+                    }
+                  ],
+                  "direction": null,
+                  "format": "",
+                  "indent": 0,
+                  "type": "root",
+                  "version": 1
+                }
+              },
+              "vi": {
+                "root": {
+                  "children": [
+                    {
+                      "children": [],
+                      "direction": null,
+                      "format": "",
+                      "indent": 0,
+                      "type": "paragraph",
+                      "version": 1,
+                      "textFormat": 0
+                    },
+                    {
+                      "format": "",
+                      "type": "block",
+                      "version": 2,
+                      "fields": {
+                        "doc": "",
+                        "blockName": "",
+                        "blockType": "GoodToKnow"
+                      }
+                    }
+                  ],
+                  "direction": null,
+                  "format": "",
+                  "indent": 0,
+                  "type": "root",
+                  "version": 1
+                }
+              },
+              "ko": {
+                "root": {
+                  "children": [
+                    {
+                      "children": [],
+                      "direction": null,
+                      "format": "",
+                      "indent": 0,
+                      "type": "paragraph",
+                      "version": 1,
+                      "textFormat": 0
+                    },
+                    {
+                      "format": "",
+                      "type": "block",
+                      "version": 2,
+                      "fields": {
+                        "doc": "",
+                        "blockName": "",
+                        "blockType": "GoodToKnow"
+                      }
+                    }
+                  ],
+                  "direction": null,
+                  "format": "",
+                  "indent": 0,
+                  "type": "root",
+                  "version": 1
+                }
+              }
+            },
+            "isFullWidth": false,
+            "type": "bigSmall",
+            "blockType": "OneOneLayout"
+        }
+        
+        for (let content_type of [['content_vi', 'vi'], ['content_en', 'en'], ['content_ko', 'ko']]) {
+
+            while (check && content_type[0] !== 'content_vi') {}
+            editor.update(() => {
+                check = true
+                lexical.$getRoot().clear();
+                var parser = new DOMParser();
+                var dom = parser.parseFromString(res[i]['detail'][content_type[0]], "text/html");
+                var nodes = html.$generateNodesFromDOM(editor, dom)
+                lexical.$getRoot().select();
+                const _selection = lexical.$getSelection();
+                _selection.insertNodes(nodes);
+            }, {discrete: true, onUpdate: () => {  
+                block["column1"][content_type[1]] = editor.getEditorState().exportJSON()
+                check = false
+            }});
+
+        }
+
+        block["column1"] = JSON.stringify(block["column1"])
+
+        block["column2"] = JSON.stringify(block["column2"])
+
+        document_["blocks"].push(block)
+
+
+
+        block = {
+            "content": {},
+            "blockType": "RichText"
+        }
+
+        for (let content_type of [['tips_vi', 'vi'], ['tips_en', 'en'], ['tips_ko', 'ko']]) {
+
+            while (check && content_type[0] !== 'tips_vi') {}
+            editor.update(() => {
+                check = true
+                lexical.$getRoot().clear();
+                var parser = new DOMParser();
+                var dom = parser.parseFromString(res[i]['detail'][content_type[0]].join("<br/>"), "text/html");
+                var nodes = html.$generateNodesFromDOM(editor, dom)
+                lexical.$getRoot().select();
+                const _selection = lexical.$getSelection();
+                _selection.insertNodes(nodes);
+            }, {discrete: true, onUpdate: () => {  
+                block["content"][content_type[1]] = editor.getEditorState().exportJSON()
+                check = false
+            }});
+
+        }
+
+        document_["highlight"] = JSON.stringify(block["content"])
+
+        console.log("CONVERTTTTTTTT DOCUMENT", i, document_)
+
+        fetch("/api/mongo/experience/", {
+          method: "POST",
+          headers: {'content-type': 'application/json'},
+          body: JSON.stringify(document_)
+        }).then(res => res.json())
+        .then(res => {
+          console.log(i, res)
+        })
+      }
+    })
+    }
+
+  </script>
+  <!-- Your content editable element -->
+</body>
+</html>
